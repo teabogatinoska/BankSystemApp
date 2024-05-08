@@ -9,7 +9,6 @@ import com.example.BankSystemApp.model.Bank;
 import com.example.BankSystemApp.model.Transaction;
 import com.example.BankSystemApp.repository.AccountRepository;
 import com.example.BankSystemApp.repository.BankRepository;
-import com.example.BankSystemApp.repository.TransactionRepository;
 import com.example.BankSystemApp.service.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
