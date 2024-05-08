@@ -1,5 +1,6 @@
 package com.example.BankSystemApp.service;
 
+import com.example.BankSystemApp.dto.AccountDTO;
 import com.example.BankSystemApp.model.Account;
 import com.example.BankSystemApp.model.Transaction;
 
@@ -8,7 +9,7 @@ import java.util.List;
 
 public interface AccountService {
 
-    public Account createAccount(Account account);
+    public Account createAccount(AccountDTO accountDTO);
 
     public List<Transaction> getTransactionsForAccount(Long accountId);
 

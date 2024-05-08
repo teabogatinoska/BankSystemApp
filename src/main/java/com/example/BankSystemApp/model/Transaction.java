@@ -3,6 +3,7 @@ package com.example.BankSystemApp.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,24 +16,28 @@ import java.math.BigDecimal;
 public class Transaction {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long transactionId;
 
     @NotNull
     @Digits(integer = 10, fraction = 2)
-    @DecimalMin(value = "0.00")
+    @Min(value = 0)
     private BigDecimal amount;
-
-    private Long originatingAccountId;
-
-    private Long resultingAccountId;
 
     private String transactionReason;
 
+    @ManyToOne
+    @JoinColumn(name = "originating_account_id")
+    private Account originatingAccount;
 
-    public Transaction(BigDecimal amount, Long originatingAccountId, Long resultingAccountId, String transactionReason) {
+    @ManyToOne
+    @JoinColumn(name = "resulting_account_id")
+    private Account resultingAccount;
+
+
+    public Transaction(BigDecimal amount, String transactionReason, Account originatingAccount, Account resultingAccount) {
         this.amount = amount;
-        this.originatingAccountId = originatingAccountId;
-        this.resultingAccountId = resultingAccountId;
         this.transactionReason = transactionReason;
+        this.originatingAccount = originatingAccount;
+        this.resultingAccount = resultingAccount;
     }
 }

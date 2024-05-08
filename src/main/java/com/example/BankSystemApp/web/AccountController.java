@@ -1,9 +1,11 @@
 package com.example.BankSystemApp.web;
 
+import com.example.BankSystemApp.dto.AccountDTO;
 import com.example.BankSystemApp.model.Account;
 import com.example.BankSystemApp.model.Transaction;
 import com.example.BankSystemApp.service.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,19 +25,23 @@ public class AccountController {
     }
 
     @PostMapping
-    public ResponseEntity<Account> createAccount(@RequestBody Account account) {
+    public ResponseEntity<?> createAccount(@RequestBody AccountDTO accountDTO) {
         try {
-            Account createdAccount = accountService.createAccount(account);
-            return new ResponseEntity<>(createdAccount, HttpStatus.CREATED);
+            Account createdAccount = this.accountService.createAccount(accountDTO);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdAccount);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body("Invalid request body: " + e.getMessage());
+        } catch (DuplicateKeyException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Account with the same name already exists");
         } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred");
         }
     }
 
     @GetMapping("/{accountId}/transactions")
     public ResponseEntity<List<Transaction>> getTransactionsForAccount(@PathVariable Long accountId) {
         try {
-            List<Transaction> transactions = accountService.getTransactionsForAccount(accountId);
+            List<Transaction> transactions = this.accountService.getTransactionsForAccount(accountId);
             return new ResponseEntity<>(transactions, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -45,7 +51,7 @@ public class AccountController {
     @GetMapping("/{accountId}/balance")
     public ResponseEntity<BigDecimal> getAccountBalance(@PathVariable Long accountId) {
         try {
-            BigDecimal balance = accountService.getAccountBalance(accountId);
+            BigDecimal balance = this.accountService.getAccountBalance(accountId);
             return new ResponseEntity<>(balance, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);

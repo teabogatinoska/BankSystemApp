@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 
 @Service
@@ -72,7 +73,7 @@ public class BankServiceImpl implements BankService {
             throw new InsufficientFundsException("Insufficient funds in the originating account");
         }
 
-        Transaction transaction = new Transaction(transactionDTO.getAmount(), transactionDTO.getOriginatingAccountId(), transactionDTO.getResultingAccountId(), transactionDTO.getTransactionReason());
+        Transaction transaction = new Transaction(transactionDTO.getAmount(), transactionDTO.getTransactionReason(), originatingAccount, resultingAccount);
         transactionRepository.save(transaction);
 
         originatingAccount.setBalance(originatingAccount.getBalance().subtract(totalAmountWithFee));
@@ -94,7 +95,7 @@ public class BankServiceImpl implements BankService {
         account.setBalance(account.getBalance().subtract(amount));
         accountRepository.save(account);
 
-        Transaction transaction = new Transaction(amount.negate(), accountId, null, "Withdrawal");
+        Transaction transaction = new Transaction(amount, "Withdrawal", account, account);
         transactionRepository.save(transaction);
     }
 
@@ -107,7 +108,7 @@ public class BankServiceImpl implements BankService {
         account.setBalance(account.getBalance().add(amount));
         accountRepository.save(account);
 
-        Transaction transaction = new Transaction(amount, null, accountId, "Deposit");
+        Transaction transaction = new Transaction(amount, "Deposit", account, account);
         transactionRepository.save(transaction);
     }
 
@@ -124,12 +125,16 @@ public class BankServiceImpl implements BankService {
     }
 
     private BigDecimal calculateFee(BigDecimal amount, FeeType feeType, Bank bank) {
+        BigDecimal fee;
         if (feeType == FeeType.FLAT) {
-            return bank.getTransactionFlatFeeAmount();
+            fee =  bank.getTransactionFlatFeeAmount();
         } else if (feeType == FeeType.PERCENT) {
-            return amount.multiply(bank.getTransactionPercentFeeValue().divide(BigDecimal.valueOf(100)));
+            fee =  amount.multiply(bank.getTransactionPercentFeeValue().divide(BigDecimal.valueOf(100)));
         } else {
             throw new IllegalArgumentException("Invalid fee type");
         }
+
+        fee = fee.setScale(2, RoundingMode.HALF_DOWN);
+        return fee;
     }
 }
