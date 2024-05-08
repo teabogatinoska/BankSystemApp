@@ -1,5 +1,7 @@
 package com.example.BankSystemApp.service;
 
+import com.example.BankSystemApp.dto.BankAccountsDTO;
+import com.example.BankSystemApp.dto.BankDTO;
 import com.example.BankSystemApp.dto.TransactionDTO;
 import com.example.BankSystemApp.model.Account;
 import com.example.BankSystemApp.model.Bank;
@@ -10,17 +12,17 @@ import java.util.List;
 
 public interface BankService {
 
-    public Bank createBank(Bank bank);
+     BankDTO createBank(Bank bank);
 
-    public List<Account> getAllAccounts(Long bankId);
+     List<BankAccountsDTO> getAllAccounts(Long bankId);
 
-    public void performTransaction(TransactionDTO transactionDTO);
+     void performTransaction(TransactionDTO transactionDTO);
 
-    public void withdrawMoney(Long accountId, BigDecimal amount);
+     void withdrawMoney(Long accountId, BigDecimal amount);
 
-    public void depositMoney(Long accountId, BigDecimal amount);
+     void depositMoney(Long accountId, BigDecimal amount);
 
-    public BigDecimal getTotalTransactionFeeAmount(Long bankId);
+     BigDecimal getTotalTransactionFeeAmount(Long bankId);
 
-    public BigDecimal getTotalTransferAmount(Long bankId);
+     BigDecimal getTotalTransferAmount(Long bankId);
 }

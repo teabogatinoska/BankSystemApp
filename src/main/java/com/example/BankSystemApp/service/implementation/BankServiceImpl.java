@@ -1,5 +1,7 @@
 package com.example.BankSystemApp.service.implementation;
 
+import com.example.BankSystemApp.dto.BankAccountsDTO;
+import com.example.BankSystemApp.dto.BankDTO;
 import com.example.BankSystemApp.dto.TransactionDTO;
 import com.example.BankSystemApp.exception.AccountNotFoundException;
 import com.example.BankSystemApp.exception.BankNotFoundException;
@@ -18,6 +20,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class BankServiceImpl implements BankService {
@@ -38,19 +41,33 @@ public class BankServiceImpl implements BankService {
     }
 
     @Override
-    public Bank createBank(Bank bank) {
+    public BankDTO createBank(Bank bank) {
         try {
-            return bankRepository.save(bank);
+            Bank savedBank = this.bankRepository.save(bank);
+
+            List<Account> savedAccounts = bank.getAccounts().stream()
+                    .map(account -> {
+                        account.setBank(savedBank);
+                        return accountRepository.save(account);
+                    })
+                    .collect(Collectors.toList());
+
+            savedBank.setAccounts(savedAccounts);
+            return new BankDTO(savedBank.getBankId(), savedBank.getName());
         } catch (Exception e) {
             throw new RuntimeException("Failed to create bank: " + e.getMessage());
         }
     }
 
     @Override
-    public List<Account> getAllAccounts(Long bankId) {
+    public List<BankAccountsDTO> getAllAccounts(Long bankId) {
         Bank bank = this.bankRepository.findById(bankId)
                 .orElseThrow(() -> new BankNotFoundException("Bank not found with id: " + bankId));
-        return bank.getAccounts();
+        List<BankAccountsDTO> accountDTOs = bank.getAccounts().stream()
+                .map(this::mapAccountToDTO)
+                .collect(Collectors.toList());
+
+        return accountDTOs;
     }
 
     @Override
@@ -73,7 +90,7 @@ public class BankServiceImpl implements BankService {
             throw new InsufficientFundsException("Insufficient funds in the originating account");
         }
 
-        Transaction transaction = new Transaction(transactionDTO.getAmount(), transactionDTO.getTransactionReason(), originatingAccount, resultingAccount);
+        Transaction transaction = new Transaction(transactionDTO.getAmount(), transactionDTO.getTransactionReason(), originatingAccount, resultingAccount, transactionDTO.getFeeType());
         transactionRepository.save(transaction);
 
         originatingAccount.setBalance(originatingAccount.getBalance().subtract(totalAmountWithFee));
@@ -136,5 +153,13 @@ public class BankServiceImpl implements BankService {
 
         fee = fee.setScale(2, RoundingMode.HALF_DOWN);
         return fee;
+    }
+
+    private BankAccountsDTO mapAccountToDTO(Account account) {
+        BankAccountsDTO accountDTO = new BankAccountsDTO();
+        accountDTO.setAccountId(account.getAccountId());
+        accountDTO.setName(account.getName());
+        accountDTO.setBalance(account.getBalance());
+        return accountDTO;
     }
 }

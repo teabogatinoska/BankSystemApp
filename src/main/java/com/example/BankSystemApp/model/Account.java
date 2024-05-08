@@ -51,4 +51,10 @@ public class Account {
         this.incomingTransactions = incomingTransactions;
         this.bank = bank;
     }
+
+    public Account(BigDecimal balance, String name, Bank bank) {
+        this.balance = balance;
+        this.name = name;
+        this.bank = bank;
+    }
 }

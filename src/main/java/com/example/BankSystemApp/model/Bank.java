@@ -43,8 +43,7 @@ public class Bank {
     @Digits(integer = 10, fraction = 2)
     private BigDecimal  transactionPercentFeeValue;
 
-    @JsonIgnore
-    @OneToMany(mappedBy = "bank")
+    @OneToMany(mappedBy = "bank", fetch = FetchType.LAZY)
     private List<Account> accounts = new ArrayList<>();
 
 

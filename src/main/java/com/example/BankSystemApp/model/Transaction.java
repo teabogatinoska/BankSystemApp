@@ -33,8 +33,18 @@ public class Transaction {
     @JoinColumn(name = "resulting_account_id")
     private Account resultingAccount;
 
+    private FeeType feeType;
 
-    public Transaction(BigDecimal amount, String transactionReason, Account originatingAccount, Account resultingAccount) {
+
+    public Transaction(BigDecimal amount, String transactionReason, Account originatingAccount, Account resultingAccount, FeeType feeType) {
+        this.amount = amount;
+        this.transactionReason = transactionReason;
+        this.originatingAccount = originatingAccount;
+        this.resultingAccount = resultingAccount;
+        this.feeType = feeType;
+    }
+
+    public Transaction(BigDecimal amount, String withdrawal, Account account, Account account1) {
         this.amount = amount;
         this.transactionReason = transactionReason;
         this.originatingAccount = originatingAccount;

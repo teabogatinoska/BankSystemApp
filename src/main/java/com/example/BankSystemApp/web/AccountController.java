@@ -1,8 +1,7 @@
 package com.example.BankSystemApp.web;
 
 import com.example.BankSystemApp.dto.AccountDTO;
-import com.example.BankSystemApp.model.Account;
-import com.example.BankSystemApp.model.Transaction;
+import com.example.BankSystemApp.dto.TransactionDTO;
 import com.example.BankSystemApp.service.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
@@ -27,8 +26,8 @@ public class AccountController {
     @PostMapping
     public ResponseEntity<?> createAccount(@RequestBody AccountDTO accountDTO) {
         try {
-            Account createdAccount = this.accountService.createAccount(accountDTO);
-            return ResponseEntity.status(HttpStatus.CREATED).body(createdAccount);
+            this.accountService.createAccount(accountDTO);
+            return ResponseEntity.status(HttpStatus.CREATED).body("Account has been created");
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body("Invalid request body: " + e.getMessage());
         } catch (DuplicateKeyException e) {
@@ -39,9 +38,9 @@ public class AccountController {
     }
 
     @GetMapping("/{accountId}/transactions")
-    public ResponseEntity<List<Transaction>> getTransactionsForAccount(@PathVariable Long accountId) {
+    public ResponseEntity<List<TransactionDTO>> getTransactionsForAccount(@PathVariable Long accountId) {
         try {
-            List<Transaction> transactions = this.accountService.getTransactionsForAccount(accountId);
+            List<TransactionDTO> transactions = this.accountService.getTransactionsForAccount(accountId);
             return new ResponseEntity<>(transactions, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);

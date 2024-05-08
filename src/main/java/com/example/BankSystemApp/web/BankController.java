@@ -1,20 +1,20 @@
 package com.example.BankSystemApp.web;
 
+import com.example.BankSystemApp.dto.BankAccountsDTO;
+import com.example.BankSystemApp.dto.BankDTO;
 import com.example.BankSystemApp.dto.TransactionDTO;
 import com.example.BankSystemApp.exception.AccountNotFoundException;
 import com.example.BankSystemApp.exception.InsufficientFundsException;
-import com.example.BankSystemApp.model.Account;
 import com.example.BankSystemApp.model.Bank;
-import com.example.BankSystemApp.model.FeeType;
+
 import com.example.BankSystemApp.service.BankService;
-import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.util.List;
+
 
 @RestController
 @RequestMapping("/banks")
@@ -27,9 +27,9 @@ public class BankController {
     }
 
     @PostMapping
-    public ResponseEntity<Bank> createBank(@RequestBody Bank bank) {
+    public ResponseEntity<BankDTO> createBank(@RequestBody Bank bank) {
         try {
-            Bank createdBank = this.bankService.createBank(bank);
+            BankDTO createdBank = this.bankService.createBank(bank);
             return new ResponseEntity<>(createdBank, HttpStatus.CREATED);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -37,10 +37,10 @@ public class BankController {
     }
 
     @GetMapping("/{bankId}/accounts")
-    public ResponseEntity<List<Account>> getAccountsForBank(@PathVariable Long bankId) {
+    public ResponseEntity<List<BankAccountsDTO>> getAccountsForBank(@PathVariable Long bankId) {
         try {
-            List<Account> accounts = this.bankService.getAllAccounts(bankId);
-            return new ResponseEntity<>(accounts, HttpStatus.OK);
+            List<BankAccountsDTO> accountsDTOs = this.bankService.getAllAccounts(bankId);
+            return new ResponseEntity<>(accountsDTOs, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -109,4 +109,5 @@ public class BankController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
+
 }

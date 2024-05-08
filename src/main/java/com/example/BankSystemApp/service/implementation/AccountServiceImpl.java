@@ -1,6 +1,7 @@
 package com.example.BankSystemApp.service.implementation;
 
 import com.example.BankSystemApp.dto.AccountDTO;
+import com.example.BankSystemApp.dto.TransactionDTO;
 import com.example.BankSystemApp.exception.AccountNotFoundException;
 import com.example.BankSystemApp.exception.BankNotFoundException;
 import com.example.BankSystemApp.model.Account;
@@ -32,12 +33,13 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Account createAccount(AccountDTO accountDTO) {
+    public void createAccount(AccountDTO accountDTO) {
         try {
             Bank bank = bankRepository.findById(accountDTO.getBankId())
                     .orElseThrow(() -> new BankNotFoundException("Bank not found with id: " + accountDTO.getBankId()));
-            Account account = new Account(accountDTO.getName(), accountDTO.getBalance(), bank);
-            return accountRepository.save(account);
+            Account account = new Account( accountDTO.getName(), accountDTO.getBalance(), bank);
+
+            this.accountRepository.save(account);
         } catch (Exception e) {
             throw new RuntimeException("Failed to create account: " + e.getMessage(), e);
         }
@@ -45,10 +47,10 @@ public class AccountServiceImpl implements AccountService {
 
 
     @Override
-    public List<Transaction> getTransactionsForAccount(Long accountId) {
+    public List<TransactionDTO> getTransactionsForAccount(Long accountId) {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new AccountNotFoundException("Account not found with ID: " + accountId));
-
+        Long bankId = account.getBank().getBankId();
         List<Transaction> outgoingTransactions = account.getOutgoingTransactions();
         List<Transaction> incomingTransactions = account.getIncomingTransactions();
 
@@ -56,7 +58,12 @@ public class AccountServiceImpl implements AccountService {
         mergedTransactions.addAll(outgoingTransactions);
         mergedTransactions.addAll(incomingTransactions);
 
-        return mergedTransactions;
+        List<TransactionDTO> transactionDTOList = new ArrayList<>();
+        for (Transaction transaction : mergedTransactions) {
+            TransactionDTO transactionDTO = mapTransactionToDTO(transaction, bankId );
+            transactionDTOList.add(transactionDTO);
+        }
+        return transactionDTOList;
     }
 
     @Override
@@ -64,5 +71,16 @@ public class AccountServiceImpl implements AccountService {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new AccountNotFoundException("Account not found with ID: " + accountId));
         return account.getBalance();
+    }
+
+    private TransactionDTO mapTransactionToDTO(Transaction transaction, Long bankId) {
+        TransactionDTO transactionDTO = new TransactionDTO();
+        transactionDTO.setBankId(bankId);
+        transactionDTO.setAmount(transaction.getAmount());
+        transactionDTO.setOriginatingAccountId(transaction.getOriginatingAccount().getAccountId());
+        transactionDTO.setResultingAccountId(transaction.getResultingAccount().getAccountId());
+        transactionDTO.setTransactionReason(transaction.getTransactionReason());
+        transactionDTO.setFeeType(transaction.getFeeType());
+        return transactionDTO;
     }
 }
